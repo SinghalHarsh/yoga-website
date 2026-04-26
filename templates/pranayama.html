@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anulom Vilom Pranayama</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 4px;
+    background: #7c3aed; transition: width 0.3s; z-index: 100;
+  }
+
+  .round-info {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    font-size: 0.85rem; color: #64748b; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  .list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 50px 32px 60px;
+    gap: 0;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 24px;
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    min-height: 48px;
+    opacity: 0.7;
+  }
+
+  .row.active {
+    color: #ffffff;
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.3), rgba(124, 58, 237, 0.05));
+    border-left: 6px solid #a78bfa;
+    border-radius: 0 8px 8px 0;
+    font-weight: 700;
+    opacity: 1;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+  .row.active .phase { opacity: 1; }
+
+  .row.done {
+    opacity: 0.45;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { background: linear-gradient(90deg, rgba(124, 58, 237, 0.3), rgba(124, 58, 237, 0.05)); }
+    50% { background: linear-gradient(90deg, rgba(124, 58, 237, 0.5), rgba(124, 58, 237, 0.1)); }
+  }
+
+  .phase {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    min-width: 70px;
+    text-align: center;
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+  .phase.inhale { background: #166534; color: #4ade80; }
+  .phase.hold   { background: #78350f; color: #fbbf24; }
+  .phase.exhale { background: #1e3a5f; color: #60a5fa; }
+  .phase.speak  { background: #3b0764; color: #c4b5fd; }
+
+  .label { flex: 1; }
+  .row.active .label.inhale { color: #86efac; }
+  .row.active .label.hold   { color: #fde68a; }
+  .row.active .label.exhale { color: #93c5fd; }
+  .row.active .label.speak  { color: #c4b5fd; }
+
+  /* Start screen */
+  .start-screen {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 28px;
+  }
+  .start-screen h1 { font-size: 2.5rem; font-weight: 200; color: #c4b5fd; }
+
+  .settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+    background: #1e293b;
+    padding: 28px 36px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    max-width: 440px;
+    width: 100%;
+  }
+  .setting {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .setting.full { grid-column: 1 / -1; }
+  .voice-row {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 24px;
+    padding-top: 8px;
+    border-top: 1px solid #334155;
+    margin-top: 4px;
+  }
+  .voice-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #c4b5fd;
+    text-transform: none;
+    letter-spacing: normal;
+    cursor: pointer;
+  }
+  .voice-label input { accent-color: #7c3aed; width: 16px; height: 16px; cursor: pointer; }
+  .voice-select {
+    background: #0f172a; border: 1px solid #475569; border-radius: 8px;
+    color: #c4b5fd; font-size: 0.95rem; padding: 8px 12px; outline: none;
+    width: 100%;
+  }
+  .voice-select:focus { border-color: #7c3aed; }
+  .setting label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .setting input[type="number"] {
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    width: 80px;
+    text-align: center;
+    outline: none;
+  }
+  .setting input[type="number"]:focus { border-color: #7c3aed; }
+  .setting input.inhale { color: #4ade80; }
+  .setting input.hold   { color: #fbbf24; }
+  .setting input.exhale { color: #60a5fa; }
+  .setting input.rounds { color: #c4b5fd; }
+
+  .summary {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .btn {
+    background: #7c3aed; color: #fff; border: none;
+    padding: 16px 48px; font-size: 1.2rem; border-radius: 12px; cursor: pointer;
+  }
+  .btn:hover { background: #6d28d9; }
+
+  .countdown-overlay {
+    position: fixed; inset: 0;
+    background: #0f172a;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    z-index: 200;
+  }
+  .countdown-overlay .number {
+    font-size: 8rem; font-weight: 200; color: #a78bfa;
+  }
+  .countdown-overlay .sub {
+    font-size: 1.2rem; color: #64748b;
+  }
+
+  .controls {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 12px;
+  }
+  .ctrl-btn {
+    background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+    padding: 8px 28px; font-size: 0.9rem; border-radius: 8px; cursor: pointer;
+  }
+  .ctrl-btn:hover { background: #334155; }
+
+  .hidden { display: none; }
+  .home-link {
+    position: fixed; top: 12px; left: 16px; z-index: 50;
+    color: #64748b; text-decoration: none; font-size: 0.85rem;
+    padding: 4px 10px; border-radius: 6px;
+  }
+  .home-link:hover { color: #c4b5fd; background: rgba(124,58,237,0.1); }
+
+  @media (max-width: 600px) {
+    .row { font-size: 1.05rem; padding: 10px 16px; }
+    .list { padding: 50px 12px 60px; }
+    .settings { padding: 20px 20px; gap: 12px 20px; }
+    .start-screen h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+<div class="round-info" id="roundInfo"></div>
+<a href="/" class="home-link" title="Home">&#8592; Home</a>
+
+<div id="startScreen" class="start-screen">
+  <h1>Anulom Vilom</h1>
+
+  <div class="settings">
+    <div class="setting">
+      <label>Rounds</label>
+      <input type="number" id="sRounds" class="rounds" min="1" max="50" value="7" oninput="updateSettings()">
+    </div>
+    <div class="setting">
+      <label>Inhale (sec)</label>
+      <input type="number" id="sInhale" class="inhale" min="1" max="50" value="4" oninput="updateSettings()">
+    </div>
+    <div class="setting">
+      <label>Hold (sec)</label>
+      <input type="number" id="sHold" class="hold" min="0" max="50" value="16" oninput="updateSettings()">
+    </div>
+    <div class="setting">
+      <label>Exhale (sec)</label>
+      <input type="number" id="sExhale" class="exhale" min="1" max="50" value="8" oninput="updateSettings()">
+    </div>
+    <div class="setting full voice-row">
+      <label class="voice-label">
+        <input type="checkbox" id="sVoice" checked>
+        <span>Voice guidance</span>
+      </label>
+      <label class="voice-label">
+        <input type="checkbox" id="sVoiceCounts">
+        <span>Speak counts</span>
+      </label>
+    </div>
+    <div class="setting full">
+      <label>Voice</label>
+      <select id="sVoicePick" class="voice-select"></select>
+    </div>
+    <div class="setting full voice-row">
+      <label class="voice-label">
+        <input type="checkbox" id="sAmbient">
+        <span>Background sound</span>
+      </label>
+      <select id="sAmbientType" class="voice-select" style="flex:1;width:auto">
+        <option value="bowl">Singing bowls</option>
+        <option value="rain">Rain</option>
+        <option value="ocean">Ocean waves</option>
+        <option value="drone">Tanpura drone</option>
+      </select>
+      <label class="voice-label" style="gap:10px">
+        <span style="font-size:0.75rem;color:#94a3b8">Vol</span>
+        <input type="range" id="sAmbientVol" min="0" max="100" value="20" style="width:100px">
+      </label>
+    </div>
+  </div>
+
+  <div class="summary" id="summary">7 rounds &bull; ~6 min 32 sec</div>
+
+  <button class="btn" onclick="startSession()">Start</button>
+</div>
+
+<div id="session" class="list hidden"></div>
+<div class="controls hidden" id="controls">
+  <button class="ctrl-btn" id="pauseBtn" onclick="togglePause()">Pause (Space)</button>
+  <button class="ctrl-btn" onclick="skipStep()">Skip (→)</button>
+</div>
+
+<script>
+const SPEED = 1000;
+
+const LS_VOICE = 'pranayama_voice';
+const LS_COUNTS = 'pranayama_voice_counts';
+const LS_AMBIENT = 'pranayama_ambient';
+const LS_AMBIENT_TYPE = 'pranayama_ambient_type';
+const LS_AMBIENT_VOL = 'pranayama_ambient_vol';
+(function initVoicePrefs() {
+  const v = localStorage.getItem(LS_VOICE);
+  const c = localStorage.getItem(LS_COUNTS);
+  const a = localStorage.getItem(LS_AMBIENT);
+  const at = localStorage.getItem(LS_AMBIENT_TYPE);
+  const av = localStorage.getItem(LS_AMBIENT_VOL);
+  if (v !== null) document.getElementById('sVoice').checked = v === '1';
+  if (c !== null) document.getElementById('sVoiceCounts').checked = c === '1';
+  if (a !== null) document.getElementById('sAmbient').checked = a === '1';
+  if (at !== null) document.getElementById('sAmbientType').value = at;
+  if (av !== null) document.getElementById('sAmbientVol').value = av;
+  document.getElementById('sVoice').addEventListener('change', e =>
+    localStorage.setItem(LS_VOICE, e.target.checked ? '1' : '0'));
+  document.getElementById('sVoiceCounts').addEventListener('change', e =>
+    localStorage.setItem(LS_COUNTS, e.target.checked ? '1' : '0'));
+  document.getElementById('sAmbient').addEventListener('change', e =>
+    localStorage.setItem(LS_AMBIENT, e.target.checked ? '1' : '0'));
+  document.getElementById('sAmbientType').addEventListener('change', e =>
+    localStorage.setItem(LS_AMBIENT_TYPE, e.target.value));
+  document.getElementById('sAmbientVol').addEventListener('input', e => {
+    localStorage.setItem(LS_AMBIENT_VOL, e.target.value);
+    setDroneVolume(+e.target.value / 100);
+  });
+})();
+
+let voiceOn = true;
+let voiceCountsOn = false;
+let preferredVoice = null;
+
+const LS_VOICE_NAME = 'pranayama_voice_name';
+
+function populateVoiceSelect(voices) {
+  const sel = document.getElementById('sVoicePick');
+  if (!sel) return;
+  const enVoices = voices.filter(v => /^en/i.test(v.lang));
+  const list = enVoices.length ? enVoices : voices;
+  sel.innerHTML = list.map(v =>
+    `<option value="${v.name}">${v.name} (${v.lang})</option>`
+  ).join('');
+  const saved = localStorage.getItem(LS_VOICE_NAME);
+  if (saved && list.find(v => v.name === saved)) {
+    sel.value = saved;
+  } else if (preferredVoice && list.find(v => v.name === preferredVoice.name)) {
+    sel.value = preferredVoice.name;
+  }
+}
+
+// Ranked from most calming/yogic to least. First match wins as default.
+const CALM_RANK = [
+  /neerja.*natural/i,    // en-IN female neural — most authentic for pranayama
+  /sonia.*natural/i,     // en-GB female neural — slow meditative
+  /libby.*natural/i,     // en-GB female neural — soft
+  /aria.*natural/i,      // en-US female neural — warm
+  /jenny.*natural/i,     // en-US female neural — gentle
+  /heera/i,              // en-IN female (older but Indian)
+  /\bneerja\b/i,         // en-IN female non-natural fallback
+  /samantha/i,           // macOS en-US female — calm
+  /serena/i,             // macOS en-GB female
+  /moira/i,              // macOS en-IE female
+  /tessa/i,              // macOS en-ZA female
+  /karen/i,              // macOS en-AU female
+  /google.*en[-_]?gb.*female/i,
+  /google.*en[-_]?in/i,
+  /google.*en[-_]?us.*female/i,
+  /natural.*en[-_]?(gb|in|us)/i,
+];
+
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+
+  const saved = localStorage.getItem(LS_VOICE_NAME);
+  const savedVoice = saved && voices.find(v => v.name === saved);
+  if (savedVoice) {
+    preferredVoice = savedVoice;
+    populateVoiceSelect(voices);
+    return;
+  }
+
+  for (const re of CALM_RANK) {
+    const match = voices.find(v => re.test(v.name) && /^en/i.test(v.lang));
+    if (match) {
+      preferredVoice = match;
+      populateVoiceSelect(voices);
+      return;
+    }
+  }
+
+  preferredVoice =
+    voices.find(v => /en[-_]IN/i.test(v.lang)) ||
+    voices.find(v => /en[-_]GB/i.test(v.lang)) ||
+    voices.find(v => /en[-_]US/i.test(v.lang)) ||
+    voices.find(v => /^en/i.test(v.lang)) ||
+    voices[0];
+  populateVoiceSelect(voices);
+}
+if ('speechSynthesis' in window) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+  document.getElementById('sVoicePick').addEventListener('change', e => {
+    const name = e.target.value;
+    localStorage.setItem(LS_VOICE_NAME, name);
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(x => x.name === name);
+    if (v) {
+      preferredVoice = v;
+      voiceOn = true;
+      speak('Breathe in. Breathe out.', { rate: 0.78, pitch: 0.85 });
+    }
+  });
+}
+
+function speak(text, { rate = 0.78, pitch = 0.85, interrupt = true, volume = 0.9, onend = null } = {}) {
+  if (!voiceOn || !('speechSynthesis' in window)) {
+    if (onend) onend();
+    return;
+  }
+  if (interrupt) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if (preferredVoice) u.voice = preferredVoice;
+  u.rate = rate;
+  u.pitch = pitch;
+  u.volume = volume;
+  if (onend) {
+    let fired = false;
+    u.onend = () => { if (!fired) { fired = true; onend(); } };
+    u.onerror = () => { if (!fired) { fired = true; onend(); } };
+  }
+  speechSynthesis.speak(u);
+}
+
+function stopSpeech() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+// ---------------- Ambient sounds (Web Audio API) ----------------
+let audioCtx = null;
+let ambientNodes = null;
+let ambientCleanup = null;
+
+function ensureCtx() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!audioCtx) audioCtx = new Ctx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function buildDrone(ctx, master) {
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 800; lp.Q.value = 0.6;
+  lp.connect(master);
+  const freqs = [
+    { f: 110, detune: 0, gain: 0.55 },
+    { f: 110, detune: 6, gain: 0.35 },
+    { f: 164.81, detune: -4, gain: 0.18 },
+    { f: 220, detune: 3, gain: 0.10 },
+  ];
+  const oscs = freqs.map(({ f, detune, gain }) => {
+    const o = ctx.createOscillator();
+    o.type = 'sine'; o.frequency.value = f; o.detune.value = detune;
+    const g = ctx.createGain(); g.gain.value = gain;
+    o.connect(g).connect(lp); o.start();
+    return o;
+  });
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine'; lfo.frequency.value = 0.08;
+  const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.08;
+  lfo.connect(lfoGain).connect(master.gain);
+  lfo.start();
+  return () => { try { oscs.forEach(o => o.stop()); lfo.stop(); } catch (e) {} };
+}
+
+function makeNoiseBuffer(ctx, seconds, type) {
+  const len = ctx.sampleRate * seconds;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  if (type === 'pink') {
+    // Paul Kellet pink noise filter
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i=0;i<len;i++) {
+      const w = Math.random()*2-1;
+      b0=0.99886*b0+w*0.0555179;
+      b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520;
+      b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522;
+      b5=-0.7616*b5-w*0.0168980;
+      data[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+      b6=w*0.115926;
+    }
+  } else {
+    for (let i=0;i<len;i++) data[i]=Math.random()*2-1;
+  }
+  return buf;
+}
+
+function buildRain(ctx, master) {
+  const noise = ctx.createBufferSource();
+  noise.buffer = makeNoiseBuffer(ctx, 4, 'white');
+  noise.loop = true;
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 800;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 4500; lp.Q.value = 0.4;
+  const gain = ctx.createGain(); gain.gain.value = 0.45;
+  // Slow LFO on lowpass cutoff for natural ebb/flow
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine'; lfo.frequency.value = 0.06;
+  const lfoG = ctx.createGain(); lfoG.gain.value = 1500;
+  lfo.connect(lfoG).connect(lp.frequency);
+  lfo.start();
+  noise.connect(hp).connect(lp).connect(gain).connect(master);
+  noise.start();
+  return () => { try { noise.stop(); lfo.stop(); } catch (e) {} };
+}
+
+function buildOcean(ctx, master) {
+  const noise = ctx.createBufferSource();
+  noise.buffer = makeNoiseBuffer(ctx, 6, 'pink');
+  noise.loop = true;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 600; lp.Q.value = 0.3;
+  const gain = ctx.createGain(); gain.gain.value = 0;
+  // Wave LFO ~7 sec cycle = relaxed breathing rate
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine'; lfo.frequency.value = 0.14;
+  const lfoG = ctx.createGain(); lfoG.gain.value = 0.55;
+  const offset = ctx.createConstantSource(); offset.offset.value = 0.5;
+  offset.start();
+  offset.connect(gain.gain);
+  lfo.connect(lfoG).connect(gain.gain);
+  lfo.start();
+  noise.connect(lp).connect(gain).connect(master);
+  noise.start();
+  return () => { try { noise.stop(); lfo.stop(); offset.stop(); } catch (e) {} };
+}
+
+function buildBowls(ctx, master) {
+  // Soft singing bowl: struck partial tones, slow decays, gentle re-strikes.
+  const reverb = ctx.createGain(); reverb.gain.value = 1;
+  reverb.connect(master);
+  // Pseudo-reverb via lowpassed feedback delay
+  const delay = ctx.createDelay(2); delay.delayTime.value = 0.45;
+  const fb = ctx.createGain(); fb.gain.value = 0.55;
+  const dlp = ctx.createBiquadFilter(); dlp.type='lowpass'; dlp.frequency.value=2200;
+  reverb.connect(delay).connect(dlp).connect(fb).connect(delay);
+  dlp.connect(master);
+
+  // Bowl frequencies (cents-detuned partials of A) — calm pentatonic intervals
+  const partials = [196, 261.63, 329.63, 392, 523.25]; // G3, C4, E4, G4, C5
+  let stopped = false;
+  let timeouts = [];
+  function strike() {
+    if (stopped) return;
+    const f = partials[Math.floor(Math.random()*partials.length)];
+    const o1 = ctx.createOscillator(); o1.type='sine'; o1.frequency.value=f;
+    const o2 = ctx.createOscillator(); o2.type='sine'; o2.frequency.value=f*2.01; // slight inharmonic shimmer
+    const g = ctx.createGain();
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.22, now + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0005, now + 6);
+    const g2 = ctx.createGain(); g2.gain.value = 0.07;
+    o1.connect(g).connect(reverb);
+    o2.connect(g2).connect(reverb);
+    o1.start(now); o2.start(now);
+    o1.stop(now + 6.2); o2.stop(now + 6.2);
+    const next = 4500 + Math.random() * 5000;
+    timeouts.push(setTimeout(strike, next));
+  }
+  // First strike soon
+  timeouts.push(setTimeout(strike, 200));
+  return () => {
+    stopped = true;
+    timeouts.forEach(t => clearTimeout(t));
+  };
+}
+
+const AMBIENT_BUILDERS = {
+  drone: buildDrone,
+  rain: buildRain,
+  ocean: buildOcean,
+  bowl: buildBowls,
+};
+
+function startAmbient(type, volume) {
+  if (ambientNodes) return;
+  const ctx = ensureCtx();
+  if (!ctx) return;
+  try {
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+    const builder = AMBIENT_BUILDERS[type] || buildBowls;
+    const cleanup = builder(ctx, master);
+    const target = Math.max(0, Math.min(1, volume));
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(target, ctx.currentTime + 3);
+    ambientNodes = { master };
+    ambientCleanup = cleanup;
+  } catch (e) {
+    console.warn('Ambient init failed', e);
+  }
+}
+
+function setDroneVolume(vol) {
+  if (!ambientNodes || !audioCtx) return;
+  const target = Math.max(0, Math.min(1, vol));
+  ambientNodes.master.gain.cancelScheduledValues(audioCtx.currentTime);
+  ambientNodes.master.gain.linearRampToValueAtTime(target, audioCtx.currentTime + 0.4);
+}
+
+function stopDrone() {
+  if (!ambientNodes || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  ambientNodes.master.gain.cancelScheduledValues(now);
+  ambientNodes.master.gain.setValueAtTime(ambientNodes.master.gain.value, now);
+  ambientNodes.master.gain.linearRampToValueAtTime(0, now + 1.5);
+  const cleanup = ambientCleanup;
+  ambientNodes = null;
+  ambientCleanup = null;
+  setTimeout(() => { if (cleanup) cleanup(); }, 1700);
+}
+
+function phaseAnnouncement(step) {
+  if (step.type === 'inhale') return `${step.nostril.toLowerCase()} inhale`;
+  if (step.type === 'exhale') return `${step.nostril.toLowerCase()} exhale`;
+  if (step.type === 'hold') return 'Hold';
+  return step.text;
+}
+
+function getSettings() {
+  return {
+    rounds: +document.getElementById('sRounds').value,
+    inhale: +document.getElementById('sInhale').value,
+    hold: +document.getElementById('sHold').value,
+    exhale: +document.getElementById('sExhale').value,
+    voice: document.getElementById('sVoice').checked,
+    voiceCounts: document.getElementById('sVoiceCounts').checked,
+    ambient: document.getElementById('sAmbient').checked,
+    ambientType: document.getElementById('sAmbientType').value,
+    ambientVol: +document.getElementById('sAmbientVol').value / 100,
+  };
+}
+
+function updateSettings() {
+  const s = getSettings();
+  const secsPerRound = (s.inhale + s.hold + s.exhale) * 2;
+  const totalSecs = secsPerRound * s.rounds + 12;
+  const min = Math.floor(totalSecs / 60);
+  const sec = totalSecs % 60;
+  document.getElementById('summary').textContent =
+    `${s.rounds} rounds \u2022 ~${min} min ${sec} sec`;
+}
+updateSettings();
+
+function buildSteps(cfg) {
+  const steps = [];
+  steps.push({ type: 'speak', text: 'Getting ready for Anulom Vilom.', duration: 4000 });
+  steps.push({ type: 'speak', text: 'Keeping left hand in Chin Mudra. Right hand in Vishnu Mudra.', duration: 6000 });
+  steps.push({ type: 'speak', text: 'Inhale through both the nostrils. Exhale completely.', duration: 6000 });
+
+  for (let r = 1; r <= cfg.rounds; r++) {
+    steps.push({ type: 'inhale', nostril: 'LEFT', round: r, counts: cfg.inhale, first: r === 1 });
+    if (cfg.hold > 0) steps.push({ type: 'hold', round: r, counts: cfg.hold });
+    steps.push({ type: 'exhale', nostril: 'RIGHT', round: r, counts: cfg.exhale });
+    steps.push({ type: 'inhale', nostril: 'RIGHT', round: r, counts: cfg.inhale });
+    if (cfg.hold > 0) steps.push({ type: 'hold', round: r, counts: cfg.hold });
+    steps.push({ type: 'exhale', nostril: 'LEFT', round: r, counts: cfg.exhale });
+  }
+  steps.push({ type: 'speak', text: 'Relax your hands.', duration: 4000 });
+  steps.push({ type: 'speak', text: 'This is to bring the balance in the nadis, Ida and Pingala.', duration: 6000 });
+  steps.push({ type: 'speak', text: 'And to cleanse the nadis.', duration: 4000 });
+  steps.push({ type: 'speak', text: 'It relaxes all the internal body parts.', duration: 5000 });
+  steps.push({ type: 'speak', text: 'Namaste.', duration: 3000 });
+  return steps;
+}
+
+function stepBaseText(s) {
+  if (s.type === 'speak') return s.text;
+  const labels = { inhale: 'Inhale', hold: 'Hold', exhale: 'Exhale' };
+  if (s.type === 'inhale') return s.first ? 'LEFT — Inhale' : 'Inhale';
+  if (s.type === 'hold') return 'Hold';
+  return `${s.nostril} — Exhale`;
+}
+
+function fullCountText(s) {
+  if (!s.counts) return '';
+  return Array.from({length: s.counts}, (_, i) => i + 1).join('  ');
+}
+
+function updateCountInLabel(labelEl, step, currentCount) {
+  const base = stepBaseText(step);
+  const nums = [];
+  for (let i = 1; i <= step.counts; i++) {
+    if (i < currentCount) {
+      nums.push(`<span style="opacity:0.4">${i}</span>`);
+    } else if (i === currentCount) {
+      nums.push(`<span style="font-weight:700;font-size:1.6em">${i}</span>`);
+    } else {
+      nums.push(`<span style="opacity:0.2">${i}</span>`);
+    }
+  }
+  labelEl.innerHTML = `${base} &nbsp; ${nums.join(' &nbsp; ')}`;
+}
+
+let steps = [];
+let rows = [];
+let idx = 0;
+let paused = false;
+let timer = null;
+let countTimer = null;
+let totalRounds = 10;
+let pausedCount = 0;
+let pausedRemaining = 0;
+const session = document.getElementById('session');
+const progressEl = document.getElementById('progress');
+const roundInfoEl = document.getElementById('roundInfo');
+
+function startSession() {
+  const cfg = getSettings();
+  voiceOn = cfg.voice;
+  voiceCountsOn = cfg.voiceCounts;
+  if (voiceOn && 'speechSynthesis' in window) {
+    const warmup = new SpeechSynthesisUtterance(' ');
+    warmup.volume = 0;
+    speechSynthesis.speak(warmup);
+  }
+  if (cfg.ambient) startAmbient(cfg.ambientType, cfg.ambientVol);
+  totalRounds = cfg.rounds;
+  steps = buildSteps(cfg);
+
+  // Clear and rebuild rows
+  session.innerHTML = '';
+  rows = [];
+  steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <span class="phase ${s.type}">${s.type.toUpperCase()}</span>
+      <span class="label ${s.type}" id="label-${i}">${stepBaseText(s)}</span>
+    `;
+    session.appendChild(row);
+    rows.push(row);
+  });
+
+  document.getElementById('startScreen').classList.add('hidden');
+
+  // Show 3-2-1 countdown
+  const overlay = document.createElement('div');
+  overlay.className = 'countdown-overlay';
+  overlay.innerHTML = '<div class="number">3</div><div class="sub">Get Ready</div>';
+  document.body.appendChild(overlay);
+
+  let cd = 3;
+  const cdTimer = setInterval(() => {
+    cd--;
+    if (cd <= 0) {
+      clearInterval(cdTimer);
+      overlay.remove();
+      session.classList.remove('hidden');
+      document.getElementById('controls').classList.remove('hidden');
+      idx = 0;
+      runStep();
+    } else {
+      overlay.querySelector('.number').textContent = cd;
+    }
+  }, 1000);
+}
+
+function scrollToActive() {
+  const row = rows[idx];
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function setActive(i) {
+  rows.forEach((r, ri) => {
+    r.classList.remove('active');
+    r.style.opacity = '';
+    r.style.background = '';
+    r.style.fontWeight = '';
+    r.style.borderLeft = '';
+    r.style.color = '';
+    if (ri < i) {
+      r.classList.add('done');
+      r.style.opacity = '0.45';
+    }
+  });
+  if (rows[i]) {
+    rows[i].classList.add('active');
+    rows[i].style.opacity = '1';
+    rows[i].style.background = 'linear-gradient(90deg, rgba(124,58,237,0.35), rgba(124,58,237,0.05))';
+    rows[i].style.fontWeight = '700';
+    rows[i].style.borderLeft = '6px solid #a78bfa';
+    rows[i].style.color = '#ffffff';
+  }
+}
+
+function startCountLoop(step, labelEl, startFrom) {
+  const speakCounts = voiceCountsOn && step.type !== 'hold';
+  let c = startFrom;
+  updateCountInLabel(labelEl, step, c);
+  if (speakCounts) speak(String(c), { interrupt: true, rate: 1.15, pitch: 0.85 });
+  pausedCount = c;
+  countTimer = setInterval(() => {
+    c++;
+    if (c > step.counts) {
+      clearInterval(countTimer); countTimer = null;
+      pausedCount = 0;
+      labelEl.textContent = stepBaseText(step);
+      idx++;
+      runStep();
+    } else {
+      pausedCount = c;
+      updateCountInLabel(labelEl, step, c);
+      if (speakCounts) speak(String(c), { interrupt: true, rate: 1.15, pitch: 0.85 });
+    }
+  }, SPEED);
+}
+
+function runStep() {
+  if (idx >= steps.length) {
+    roundInfoEl.textContent = 'DONE';
+    progressEl.style.width = '100%';
+    document.getElementById('controls').classList.add('hidden');
+    stopSpeech();
+    stopDrone();
+    return;
+  }
+
+  const step = steps[idx];
+  const resuming = pausedCount > 0 || pausedRemaining > 0;
+
+  // Kick off audio FIRST so engine warms before paint — compensates for TTS startup latency.
+  // For phase steps, schedule onend handler here; visual setup happens immediately after.
+  let phaseStarted = false;
+  if (!resuming) {
+    if (step.type === 'speak') {
+      speak(step.text);
+    } else if (voiceOn && 'speechSynthesis' in window) {
+      pausedCount = 1; // mark in-progress for pause/resume during phase voice
+      let started = false;
+      const beginCounts = () => {
+        if (started) return;
+        started = true;
+        timer = setTimeout(() => {
+          if (paused || idx >= steps.length || steps[idx] !== step) return;
+          const lbl = document.getElementById(`label-${idx}`);
+          if (lbl) startCountLoop(step, lbl, 1);
+        }, 200);
+      };
+      speak(phaseAnnouncement(step), { onend: beginCounts });
+      const estMs = phaseAnnouncement(step).length * 70 + 600;
+      setTimeout(beginCounts, estMs);
+      phaseStarted = true;
+    }
+  }
+
+  progressEl.style.width = `${(idx / steps.length) * 100}%`;
+  if (step.round) roundInfoEl.textContent = `Round ${step.round} / ${totalRounds}`;
+
+  setActive(idx);
+  scrollToActive();
+
+  const labelEl = document.getElementById(`label-${idx}`);
+
+  if (step.type === 'speak') {
+    let remaining = pausedRemaining || Math.ceil(step.duration / 1000);
+    pausedRemaining = 0;
+    pausedCount = 0;
+    labelEl.innerHTML = `${step.text} <span style="opacity:0.5;font-size:0.8em;margin-left:12px">${remaining}s</span>`;
+    // (speech already triggered above for early start)
+    countTimer = setInterval(() => {
+      remaining--;
+      pausedRemaining = remaining;
+      if (remaining <= 0) {
+        clearInterval(countTimer); countTimer = null;
+        labelEl.textContent = step.text;
+        idx++; runStep();
+      } else {
+        labelEl.innerHTML = `${step.text} <span style="opacity:0.5;font-size:0.8em;margin-left:12px">${remaining}s</span>`;
+      }
+    }, 1000);
+  } else {
+    const startFrom = pausedCount || 1;
+    pausedCount = 0;
+    pausedRemaining = 0;
+
+    if (resuming || startFrom > 1) {
+      // Resume mid-phase: skip phase voice, jump straight to count loop.
+      startCountLoop(step, labelEl, startFrom);
+    } else if (phaseStarted) {
+      // Phase voice + count scheduling already kicked off above; just set base label text.
+      labelEl.textContent = stepBaseText(step);
+    } else {
+      // Voice off: counts start immediately at 1.
+      startCountLoop(step, labelEl, 1);
+    }
+  }
+}
+
+function togglePause() {
+  const btn = document.getElementById('pauseBtn');
+  if (paused) {
+    paused = false;
+    btn.textContent = 'Pause (Space)';
+    runStep();
+  } else {
+    paused = true;
+    btn.textContent = 'Resume (Space)';
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (countTimer) { clearInterval(countTimer); countTimer = null; }
+    stopSpeech();
+    // pausedCount and pausedRemaining are already set by the running interval
+  }
+}
+
+function skipStep() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  if (countTimer) { clearInterval(countTimer); countTimer = null; }
+  stopSpeech();
+  pausedCount = 0;
+  pausedRemaining = 0;
+  paused = false;
+  document.getElementById('pauseBtn').textContent = 'Pause (Space)';
+  const labelEl = document.getElementById(`label-${idx}`);
+  if (labelEl) labelEl.textContent = stepBaseText(steps[idx]);
+  idx++;
+  runStep();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); togglePause(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); skipStep(); }
+});
+</script>
+</body>
+</html>
