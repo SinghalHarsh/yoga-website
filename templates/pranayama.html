@@ -10,9 +10,12 @@
     background: #0f172a;
     color: #e2e8f0;
     font-family: 'Segoe UI', system-ui, sans-serif;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+  body.in-session {
+    height: 100vh;
     overflow: hidden;
   }
 
@@ -96,7 +99,8 @@
   /* Start screen */
   .start-screen {
     flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 28px;
+    align-items: center; justify-content: center; gap: 24px;
+    padding: 24px 16px 40px;
   }
   .start-screen h1 { font-size: 2.5rem; font-weight: 200; color: #c4b5fd; }
 
@@ -870,6 +874,7 @@ function startSession() {
   });
 
   document.getElementById('startScreen').classList.add('hidden');
+  document.body.classList.add('in-session');
 
   // Show 3-2-1 countdown
   const overlay = document.createElement('div');
