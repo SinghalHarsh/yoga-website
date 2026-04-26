@@ -101,62 +101,39 @@
   .start-screen h1 { font-size: 2.5rem; font-weight: 200; color: #c4b5fd; }
 
   .settings {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     background: #1e293b;
-    padding: 28px 36px;
+    padding: 24px 28px;
     border-radius: 16px;
     border: 1px solid #334155;
-    max-width: 440px;
+    max-width: 460px;
     width: 100%;
+  }
+  .section-title {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-bottom: -2px;
+  }
+  .divider { height: 1px; background: #334155; margin: 4px 0; }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
   }
   .setting {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-  }
-  .setting.full { grid-column: 1 / -1; }
-  .voice-row {
-    flex-direction: row;
-    justify-content: space-around;
-    gap: 24px;
-    padding-top: 8px;
-    border-top: 1px solid #334155;
-    margin-top: 4px;
-  }
-  .setting .voice-label {
-    display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: #c4b5fd;
-    text-transform: none;
-    letter-spacing: normal;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
+    gap: 4px;
+    position: relative;
   }
-  .setting .voice-label span {
-    text-transform: none;
-    letter-spacing: normal;
-    color: inherit;
-    font-weight: 500;
-  }
-  .setting .voice-label input { accent-color: #7c3aed; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
-  .voice-select {
-    background: #0f172a; border: 1px solid #475569; border-radius: 8px;
-    color: #c4b5fd; font-size: 0.9rem; padding: 6px 10px; outline: none;
-    width: 100%;
-  }
-  .voice-select:focus { border-color: #7c3aed; }
-  .voice-row {
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .voice-row input[type="range"] { accent-color: #7c3aed; }
   .setting label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -167,14 +144,117 @@
     border: 1px solid #475569;
     border-radius: 8px;
     color: #e2e8f0;
-    font-size: 1.4rem;
-    font-weight: 600;
-    padding: 8px 12px;
-    width: 80px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 6px 8px;
+    width: 100%;
     text-align: center;
     outline: none;
+    transition: border-color 0.15s, transform 0.1s;
   }
-  .setting input[type="number"]:focus { border-color: #7c3aed; }
+  .setting input[type="number"]:focus { border-color: #7c3aed; transform: scale(1.02); }
+  .setting input[type="number"]:hover { border-color: #64748b; }
+  .setting .unit {
+    font-size: 0.65rem;
+    color: #64748b;
+    letter-spacing: 0.05em;
+  }
+
+  .row-toggles {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #c4b5fd;
+    user-select: none;
+  }
+  .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .slider-pill {
+    width: 36px; height: 20px;
+    background: #334155;
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .slider-pill::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #cbd5e1;
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle input:checked + .slider-pill { background: #7c3aed; }
+  .toggle input:checked + .slider-pill::after { transform: translateX(16px); background: #fff; }
+  .toggle:hover .slider-pill { box-shadow: 0 0 0 4px rgba(124,58,237,0.15); }
+  .toggle-text { white-space: nowrap; }
+
+  .voice-select {
+    background: #0f172a; border: 1px solid #475569; border-radius: 8px;
+    color: #c4b5fd; font-size: 0.9rem; padding: 8px 12px; outline: none;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .voice-select:hover { border-color: #64748b; }
+  .voice-select:focus { border-color: #7c3aed; }
+
+  .ambient-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ambient-type { flex: 1; }
+  .vol-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .vol-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    min-width: 56px;
+  }
+  .vol-row input[type="range"] {
+    flex: 1;
+    accent-color: #7c3aed;
+    height: 4px;
+  }
+  .vol-value {
+    font-size: 0.8rem;
+    color: #c4b5fd;
+    font-weight: 600;
+    min-width: 38px;
+    text-align: right;
+  }
+
+  .hint {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: #475569;
+    letter-spacing: 0.04em;
+  }
+  .hint kbd {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin: 0 2px;
+  }
   .setting input.inhale { color: #4ade80; }
   .setting input.hold   { color: #fbbf24; }
   .setting input.exhale { color: #60a5fa; }
@@ -188,10 +268,18 @@
   }
 
   .btn {
-    background: #7c3aed; color: #fff; border: none;
-    padding: 16px 48px; font-size: 1.2rem; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: #fff; border: none;
+    padding: 14px 56px; font-size: 1.15rem; font-weight: 600;
+    border-radius: 12px; cursor: pointer; letter-spacing: 0.05em;
+    box-shadow: 0 8px 24px rgba(124,58,237,0.35);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
   }
-  .btn:hover { background: #6d28d9; }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(124,58,237,0.5);
+  }
+  .btn:active { transform: translateY(0); }
 
   .countdown-overlay {
     position: fixed; inset: 0;
@@ -228,8 +316,12 @@
   @media (max-width: 600px) {
     .row { font-size: 1.05rem; padding: 10px 16px; }
     .list { padding: 50px 12px 60px; }
-    .settings { padding: 20px 20px; gap: 12px 20px; }
+    .settings { padding: 18px 18px; gap: 12px; max-width: 100%; }
+    .start-screen { padding: 16px; gap: 18px; }
     .start-screen h1 { font-size: 1.8rem; }
+    .grid-4 { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-toggles { gap: 14px; }
+    .btn { padding: 14px 40px; font-size: 1.05rem; }
   }
 </style>
 </head>
@@ -243,55 +335,70 @@
   <h1>Anulom Vilom</h1>
 
   <div class="settings">
-    <div class="setting">
-      <label>Rounds</label>
-      <input type="number" id="sRounds" class="rounds" min="1" max="50" value="7" oninput="updateSettings()">
+    <div class="section-title">Practice</div>
+    <div class="grid-4">
+      <div class="setting" title="Number of rounds (one round = 2 nostril cycles)">
+        <label>Rounds</label>
+        <input type="number" id="sRounds" class="rounds" min="1" max="50" value="7" oninput="updateSettings()">
+      </div>
+      <div class="setting" title="Seconds to inhale">
+        <label>Inhale</label>
+        <input type="number" id="sInhale" class="inhale" min="1" max="50" value="4" oninput="updateSettings()">
+        <span class="unit">sec</span>
+      </div>
+      <div class="setting" title="Seconds to hold breath after inhale (0 to skip)">
+        <label>Hold</label>
+        <input type="number" id="sHold" class="hold" min="0" max="50" value="16" oninput="updateSettings()">
+        <span class="unit">sec</span>
+      </div>
+      <div class="setting" title="Seconds to exhale">
+        <label>Exhale</label>
+        <input type="number" id="sExhale" class="exhale" min="1" max="50" value="8" oninput="updateSettings()">
+        <span class="unit">sec</span>
+      </div>
     </div>
-    <div class="setting">
-      <label>Inhale (sec)</label>
-      <input type="number" id="sInhale" class="inhale" min="1" max="50" value="4" oninput="updateSettings()">
-    </div>
-    <div class="setting">
-      <label>Hold (sec)</label>
-      <input type="number" id="sHold" class="hold" min="0" max="50" value="16" oninput="updateSettings()">
-    </div>
-    <div class="setting">
-      <label>Exhale (sec)</label>
-      <input type="number" id="sExhale" class="exhale" min="1" max="50" value="8" oninput="updateSettings()">
-    </div>
-    <div class="setting full voice-row">
-      <label class="voice-label">
+
+    <div class="divider"></div>
+
+    <div class="section-title">Voice</div>
+    <div class="row-toggles">
+      <label class="toggle">
         <input type="checkbox" id="sVoice" checked>
-        <span>Voice guidance</span>
+        <span class="slider-pill"></span>
+        <span class="toggle-text">Voice guidance</span>
       </label>
-      <label class="voice-label">
+      <label class="toggle">
         <input type="checkbox" id="sVoiceCounts" checked>
-        <span>Speak counts</span>
+        <span class="slider-pill"></span>
+        <span class="toggle-text">Speak counts</span>
       </label>
     </div>
-    <div class="setting full">
-      <label>Voice</label>
-      <select id="sVoicePick" class="voice-select"></select>
-    </div>
-    <div class="setting full voice-row">
-      <label class="voice-label">
+    <select id="sVoicePick" class="voice-select" title="Pick the speaking voice"></select>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Background sound</div>
+    <div class="ambient-row">
+      <label class="toggle">
         <input type="checkbox" id="sAmbient">
-        <span>Background sound</span>
+        <span class="slider-pill"></span>
       </label>
-      <select id="sAmbientType" class="voice-select" style="flex:1;width:auto">
+      <select id="sAmbientType" class="voice-select ambient-type">
         <option value="bowl">Singing bowls</option>
         <option value="rain">Rain</option>
         <option value="ocean">Ocean waves</option>
         <option value="drone">Tanpura drone</option>
       </select>
-      <label class="voice-label" style="gap:10px">
-        <span style="font-size:0.75rem;color:#94a3b8">Vol</span>
-        <input type="range" id="sAmbientVol" min="0" max="100" value="20" style="width:100px">
-      </label>
+    </div>
+    <div class="vol-row">
+      <span class="vol-label">Volume</span>
+      <input type="range" id="sAmbientVol" min="0" max="100" value="20">
+      <span class="vol-value" id="volValue">20%</span>
     </div>
   </div>
 
   <div class="summary" id="summary">7 rounds &bull; ~6 min 32 sec</div>
+  <div class="hint">Press <kbd>Space</kbd> to pause &middot; <kbd>&rarr;</kbd> to skip</div>
 
   <button class="btn" onclick="startSession()">Start</button>
 </div>
@@ -332,7 +439,11 @@ const LS_AMBIENT_VOL = 'pranayama_ambient_vol';
   document.getElementById('sAmbientVol').addEventListener('input', e => {
     localStorage.setItem(LS_AMBIENT_VOL, e.target.value);
     setDroneVolume(+e.target.value / 100);
+    const vv = document.getElementById('volValue');
+    if (vv) vv.textContent = e.target.value + '%';
   });
+  // Initial vol display
+  (function(){ const vv=document.getElementById('volValue'); const sv=document.getElementById('sAmbientVol'); if (vv && sv) vv.textContent = sv.value + '%'; })();
 })();
 
 let voiceOn = true;
